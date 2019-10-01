@@ -5,19 +5,11 @@ from pacman_module.util import manhattanDistance
 
 
 def h(state):
-    min_dist = 100000
-    current_food = state.getFood().asList()
-    if len(current_food) == 0:
-        return 0
-    current_position = state.getPacmanPosition()
-    for food_position in current_food:
-        min_dist = min(min_dist, manhattanDistance(current_position, food_position))
-    return min_dist
-    # return 0
+    return 0
 
 
 def g(state, path):
-    return len(path)/2 + 50 * state.getNumFood()
+    return len(path) + 50 * state.getNumFood()
 
 
 def key(state):
@@ -60,7 +52,7 @@ class PacmanAgent(Agent):
         """
 
         if not self.moves:
-            self.moves = self.astar(state)
+            self.moves = self.bfs(state)
 
         try:
             return self.moves.pop(0)
@@ -68,7 +60,7 @@ class PacmanAgent(Agent):
         except IndexError:
             return Directions.STOP
 
-    def astar(self, state):
+    def bfs(self, state):
         """
         Given a pacman game state,
         returns a list of legal moves to solve the search layout.

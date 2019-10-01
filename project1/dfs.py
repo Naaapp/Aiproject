@@ -1,15 +1,11 @@
 """
 Author : one of the TAs, just after
 submitting an important journal manuscript.
-
 I am so tired that I might have screwed up the following DFS implementation.
-
 My fellow TAs are expected to fix all the errors
 while I'm taking a very long nap.
-
 I trust them but you should also, student,
 check the following code against a possible *unique* error.
-
 """
 
 from pacman_module.game import Agent
@@ -19,12 +15,10 @@ from pacman_module.pacman import Directions
 def key(state):
     """
     Returns a key that uniquely identifies a Pacman game state.
-
     Arguments:
     ----------
     - `state`: the current game state. See FAQ and class
                `pacman.GameState`.
-
     Return:
     -------
     - A hashable key object that uniquely identifies a Pacman game state.
@@ -48,12 +42,10 @@ class PacmanAgent(Agent):
     def get_action(self, state):
         """
         Given a pacman game state, returns a legal move.
-
         Arguments:
         ----------
         - `state`: the current game state. See FAQ and class
                    `pacman.GameState`.
-
         Return:
         -------
         - A legal move as defined in `game.Directions`.
@@ -72,19 +64,17 @@ class PacmanAgent(Agent):
         """
         Given a pacman game state,
         returns a list of legal moves to solve the search layout.
-
         Arguments:
         ----------
         - `state`: the current game state. See FAQ and class
                    `pacman.GameState`.
-
         Return:
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
         path = []
         fringe = [(state, path)]
-        closed = set()
+        closed = []
 
         while True:
             if len(fringe) == 0:
@@ -96,11 +86,17 @@ class PacmanAgent(Agent):
                 return path
 
             current_key = key(current)
+            closed.append(current_key)
 
-            if current_key not in closed:
-                closed.add(current_key)
+            # the next state must be not a state never visited but the fewest visited one
+            counter = []
+            successors = current.generatePacmanSuccessors()
+            for next_state, action in successors:
+                counter.append(closed.count(key(next_state)))  # Count how much each next state has already been visited
+            lowest_visited_indexes = [i for i in range(len(counter)) if counter[i] == min(counter)]
 
-                for next_state, action in current.generatePacmanSuccessors():
+            i = 0
+            for next_state, action in successors:
+                if i in lowest_visited_indexes:
                     fringe.append((next_state, path + [action]))
-
-        return path
+                i += 1
