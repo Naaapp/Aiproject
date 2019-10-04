@@ -10,14 +10,18 @@ def h(state):
     if len(current_food) == 0:
         return 0
     current_position = state.getPacmanPosition()
+    # for food_position in current_food:
+    #     min_dist = min(min_dist, manhattanDistance(current_position, food_position))
+    # return min_dist
+
+    result = 0
     for food_position in current_food:
-        min_dist = min(min_dist, manhattanDistance(current_position, food_position))
-    return min_dist
-    # return 0
+        result = result + manhattanDistance(current_position, food_position) ^ 2
+    return result / len(current_food)
 
 
 def g(state, path):
-    return len(path)/2 + 50 * state.getNumFood()
+    return len(path) / 2 + 50 * state.getNumFood()
 
 
 def key(state):

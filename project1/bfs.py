@@ -1,7 +1,6 @@
 from pacman_module.game import Agent
 from pacman_module.pacman import Directions
 from pacman_module.util import PriorityQueue
-from pacman_module.util import manhattanDistance
 
 
 def h(state):
