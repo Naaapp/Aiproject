@@ -1,28 +1,7 @@
 from pacman_module.game import Agent
 from pacman_module.pacman import Directions
 from pacman_module.util import PriorityQueue
-
-
-def h(state):
-    return 0
-
-
-def g(state, path):
-    return len(path) + 50 * state.getNumFood()
-
-
-def key(state):
-    """
-    Returns a key that uniquely identifies a Pacman game state.
-    Arguments:
-    ----------
-    - `state`: the current game state. See FAQ and class
-               `pacman.GameState`.
-    Return:
-    -------
-    - A hashable key object that uniquely identifies a Pacman game state.
-    """
-    return state.getPacmanPosition()
+from pacman_module.util import manhattanDistance
 
 
 class PacmanAgent(Agent):
@@ -36,7 +15,30 @@ class PacmanAgent(Agent):
         ----------
         - `args`: Namespace of arguments from command-line prompt.
         """
+        super().__init__()
         self.moves = []
+        self.food_list = []
+
+    def key(self, state):
+        """
+        Returns a key that uniquely identifies a Pacman game state.
+        Arguments:
+        ----------
+        - `state`: the current game state. See FAQ and class
+                   `pacman.GameState`.
+        Return:
+        -------
+        - A hashable key object that uniquely identifies a Pacman game state.
+        """
+        return tuple(state.getPacmanPosition()) + tuple(
+            [(1 if state.hasFood(
+                food[0], food[1]) else 0) for food in self.food_list])
+
+    def h(self, state):
+        return 0
+
+    def g(self, current_backward_cost, next_state, current_num_food):
+        return 1
 
     def get_action(self, state):
         """
@@ -51,7 +53,7 @@ class PacmanAgent(Agent):
         """
 
         if not self.moves:
-            self.moves = self.bfs(state)
+            self.moves = self.astar(state)
 
         try:
             return self.moves.pop(0)
@@ -59,7 +61,7 @@ class PacmanAgent(Agent):
         except IndexError:
             return Directions.STOP
 
-    def bfs(self, state):
+    def astar(self, state):
         """
         Given a pacman game state,
         returns a list of legal moves to solve the search layout.
@@ -71,31 +73,30 @@ class PacmanAgent(Agent):
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
-        path = []
+        self.food_list = state.getFood().asList()
         fringe = PriorityQueue()
-        fringe.push((state, path), 0)
-        closed = dict()
+        fringe.push((state, [], 0), 0)
+        closed = set()
 
         while True:
             if fringe.isEmpty() == 1:
                 return []  # failure
 
-            priority, (current, path) = fringe.pop()
+            priority, (current, path, backward_cost) = fringe.pop()
 
             if current.isWin():
                 return path
 
-            current_key = key(current)
-            closed[current_key] = priority
+            current_key = self.key(current)
 
-            successors = current.generatePacmanSuccessors()
-            for next_state, action in successors:
+            if current_key not in closed:
+                closed.add(current_key)
 
-                next_path = path + [action]
-                next_priority = h(next_state) + g(next_state, next_path)
-                next_key = key(next_state)
-                if next_key not in closed:
-                    fringe.update((next_state, next_path), next_priority)
-                elif next_priority < closed[next_key]:
-                    closed.pop(next_key)
-                    fringe.push((next_state, next_path), next_priority)
+                successors = current.generatePacmanSuccessors()
+                for next_state, action in successors:
+                    next_path = path + [action]
+                    next_backward_cost = self.g(backward_cost, next_state, current.getNumFood())
+                    next_priority = self.h(next_state) + next_backward_cost
+                    next_key = self.key(next_state)
+                    if next_key not in closed:
+                        fringe.update((next_state, next_path, next_backward_cost), next_priority)
