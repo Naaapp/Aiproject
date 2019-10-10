@@ -4,6 +4,14 @@ from pacman_module.util import PriorityQueue
 from pacman_module.util import manhattanDistance
 
 
+def h(state):
+    return 0
+
+
+def g(backward_cost, num_food):
+    return backward_cost + 1
+
+
 class PacmanAgent(Agent):
     """
     A Pacman agent based on A* algorithm.
@@ -16,8 +24,10 @@ class PacmanAgent(Agent):
         - `args`: Namespace of arguments from command-line prompt.
         """
         super().__init__()
+        self.args = args
         self.moves = []
         self.food_list = []
+        self.init_food_list = []
 
     def key(self, state):
         """
@@ -32,13 +42,7 @@ class PacmanAgent(Agent):
         """
         return tuple(state.getPacmanPosition()) + tuple(
             [(1 if state.hasFood(
-                food[0], food[1]) else 0) for food in self.food_list])
-
-    def h(self, state):
-        return 0
-
-    def g(self, current_backward_cost, next_state, current_num_food):
-        return 1
+                food[0], food[1]) else 0) for food in self.init_food_list])
 
     def get_action(self, state):
         """
@@ -73,7 +77,7 @@ class PacmanAgent(Agent):
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
-        self.food_list = state.getFood().asList()
+        self.init_food_list = state.getFood().asList()
         fringe = PriorityQueue()
         fringe.push((state, [], 0), 0)
         closed = set()
@@ -92,11 +96,10 @@ class PacmanAgent(Agent):
             if current_key not in closed:
                 closed.add(current_key)
 
-                successors = current.generatePacmanSuccessors()
-                for next_state, action in successors:
-                    next_path = path + [action]
-                    next_backward_cost = self.g(backward_cost, next_state, current.getNumFood())
-                    next_priority = self.h(next_state) + next_backward_cost
+                for next_state, action in current.generatePacmanSuccessors():
                     next_key = self.key(next_state)
                     if next_key not in closed:
-                        fringe.update((next_state, next_path, next_backward_cost), next_priority)
+                        next_path = path + [action]
+                        next_backward_cost = g(backward_cost, next_state.getNumFood())
+                        next_priority = h(next_state) + next_backward_cost
+                        fringe.push((next_state, next_path, next_backward_cost), next_priority)
