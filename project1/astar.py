@@ -10,9 +10,10 @@ def h(state):
     if len(food_list) == 0:
         return 0
     current_position = state.getPacmanPosition()
+    result = 0
     for food_position in food_list:
-        min_dist = min(min_dist, manhattanDistance(current_position, food_position))
-    return min_dist
+        result = result + manhattanDistance(current_position, food_position)
+    return result / len(food_list)
 
 
 def g(backward_cost, num_food):
