@@ -37,6 +37,8 @@ class PacmanAgent(Agent):
         ----------
         - `args`: Namespace of arguments from command-line prompt.
         """
+        super().__init__()
+        self.args = args
         self.moves = []
 
     def get_action(self, state):
@@ -52,7 +54,7 @@ class PacmanAgent(Agent):
         """
 
         if not self.moves:
-            self.moves = self.dfs(state)
+            self.moves = dfs(state)
 
         try:
             return self.moves.pop(0)
@@ -60,43 +62,44 @@ class PacmanAgent(Agent):
         except IndexError:
             return Directions.STOP
 
-    def dfs(self, state):
-        """
-        Given a pacman game state,
-        returns a list of legal moves to solve the search layout.
-        Arguments:
-        ----------
-        - `state`: the current game state. See FAQ and class
-                   `pacman.GameState`.
-        Return:
-        -------
-        - A list of legal moves as defined in `game.Directions`.
-        """
-        path = []
-        fringe = [(state, path)]
-        closed = set()
-        prev_n_food = 0
 
-        while True:
-            if len(fringe) == 0:
-                return []  # failure
+def dfs(state):
+    """
+    Given a pacman game state,
+    returns a list of legal moves to solve the search layout.
+    Arguments:
+    ----------
+    - `state`: the current game state. See FAQ and class
+               `pacman.GameState`.
+    Return:
+    -------
+    - A list of legal moves as defined in `game.Directions`.
+    """
+    path = []
+    fringe = [(state, path)]
+    closed = set()
+    prev_n_food = 0
 
-            current, path = fringe.pop()
+    while True:
+        if len(fringe) == 0:
+            return []  # failure
 
-            if current.isWin():
-                return path
+        current, path = fringe.pop()
 
-            current_key = key(current)
+        if current.isWin():
+            return path
 
-            n_food = current.getNumFood()
+        current_key = key(current)
 
-            if n_food < prev_n_food:
-                closed.clear()
+        n_food = current.getNumFood()
 
-            if current_key not in closed:
-                closed.add(current_key)
+        if n_food < prev_n_food:
+            closed.clear()
 
-                for next_state, action in current.generatePacmanSuccessors():
-                    fringe.append((next_state, path + [action]))
+        if current_key not in closed:
+            closed.add(current_key)
 
-            prev_n_food = n_food
+            for next_state, action in current.generatePacmanSuccessors():
+                fringe.append((next_state, path + [action]))
+
+        prev_n_food = n_food

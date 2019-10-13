@@ -5,10 +5,32 @@ from pacman_module.util import manhattanDistance
 
 
 def h(state):
+    """
+    Returns the value of the admissible heuristic for the current state.
+    Arguments:
+    ----------
+    - `state`: the current game state. See FAQ and class
+               `pacman.GameState`.
+    Return:
+    -------
+    - A positive value representing the admissible heuristic for the current
+    state, which always 0 for BFS algorithm
+    """
     return 0
 
 
 def g(backward_cost, num_food):
+    """
+    Returns the value of the backward cost for the current state.
+    Arguments:
+    ----------
+    - `state`: the current game state. See FAQ and class
+               `pacman.GameState`.
+    Return:
+    -------
+    - A positive value representing the backward cost,
+    equal to the previous backward cost + 1 for BFS algorithm
+    """
     return backward_cost + 1
 
 
@@ -56,9 +78,12 @@ class PacmanAgent(Agent):
         - A legal move as defined in `game.Directions`.
         """
 
+        # If the optimal path as not been already computed, we compute it
         if not self.moves:
             self.moves = self.astar(state)
 
+        # If the optimal path as been already computed,
+        # we take the next step of the path
         try:
             return self.moves.pop(0)
 
@@ -68,7 +93,8 @@ class PacmanAgent(Agent):
     def astar(self, state):
         """
         Given a pacman game state,
-        returns a list of legal moves to solve the search layout.
+        returns a list of legal moves to solve the search layout, using the A*
+        algorithm.
         Arguments:
         ----------
         - `state`: the current game state. See FAQ and class
@@ -83,14 +109,18 @@ class PacmanAgent(Agent):
         closed = set()
 
         while True:
+            # Failure case
             if fringe.isEmpty() == 1:
-                return []  # failure
+                return []
 
+            # Take the node with the lowest priority of the fringe
             priority, (current, path, backward_cost) = fringe.pop()
 
+            # Win case
             if current.isWin():
                 return path
 
+            # Take the key of the current state
             current_key = self.key(current)
 
             if current_key not in closed:
@@ -100,6 +130,8 @@ class PacmanAgent(Agent):
                     next_key = self.key(next_state)
                     if next_key not in closed:
                         next_path = path + [action]
-                        next_backward_cost = g(backward_cost, next_state.getNumFood())
+                        next_backward_cost = g(backward_cost,
+                                               next_state.getNumFood())
                         next_priority = h(next_state) + next_backward_cost
-                        fringe.push((next_state, next_path, next_backward_cost), next_priority)
+                        fringe.push((next_state, next_path,
+                                     next_backward_cost), next_priority)
