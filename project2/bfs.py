@@ -14,17 +14,9 @@ def h(state):
     Return:
     -------
     - A positive value representing the admissible heuristic for the current
-    state, The admissible heuristic chosen is the mean distance between the
-    current position and the foods position
+    state, which always 0 for BFS algorithm
     """
-    food_list = state.getFood().asList()
-    if len(food_list) == 0:
-        return 0
-    current_position = state.getPacmanPosition()
-    result = 0
-    for food_position in food_list:
-        result = result + manhattanDistance(current_position, food_position)
-    return result / len(food_list)
+    return 0
 
 
 def g(backward_cost, num_food):
@@ -36,10 +28,10 @@ def g(backward_cost, num_food):
                `pacman.GameState`.
     Return:
     -------
-    - A positive value representing the backward cost. The current backward
-    cost is the previous backward cost + the current number of food
+    - A positive value representing the backward cost,
+    equal to the previous backward cost + 1 for BFS algorithm
     """
-    return backward_cost + num_food
+    return backward_cost + 1
 
 
 class PacmanAgent(Agent):
@@ -71,8 +63,8 @@ class PacmanAgent(Agent):
         - A hashable key object that uniquely identifies a Pacman game state.
         """
         return tuple(state.getPacmanPosition()) + tuple(
-            [(1 if state.hasFood(food[0], food[1]) else 0)
-             for food in self.init_food_list])
+            [(1 if state.hasFood(
+                food[0], food[1]) else 0) for food in self.init_food_list])
 
     def get_action(self, state):
         """
