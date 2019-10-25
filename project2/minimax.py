@@ -30,7 +30,9 @@ class PacmanAgent(Agent):
         - A hashable key object that uniquely identifies a Pacman game state.
         """
         return tuple(state.getPacmanPosition()) + tuple(
-            state.getGhostPosition(1))
+            state.getGhostPosition(1)) + tuple(
+            [(1 if state.hasFood(
+                food[0], food[1]) else 0) for food in self.init_food_list])
 
     def get_action(self, state):
         """
@@ -79,12 +81,12 @@ class PacmanAgent(Agent):
         # print("/")
 
         if current.isLose():
-            print("loose", depth)
-            return -30, []
+            # print("loose", depth)
+            return current.getScore(), []
 
         if current.isWin():
-            print(depth)
-            return 30 - depth, []
+            # print(depth)
+            return current.getScore(), []
 
         current_key = self.key(current)
 
@@ -99,6 +101,7 @@ class PacmanAgent(Agent):
                 min_score = 100000
                 successors = current.generateGhostSuccessors(1)
                 for next_state, action in successors:
+                    print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth)
                     if min_score > next_score:
@@ -111,6 +114,7 @@ class PacmanAgent(Agent):
                 max_score = 0
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
+                    print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1)
                     if max_score < next_score:
