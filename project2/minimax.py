@@ -2,20 +2,6 @@ from pacman_module.game import Agent
 from pacman_module.pacman import Directions
 
 
-def key(state):
-    """
-    Returns a key that uniquely identifies a Pacman game state.
-    Arguments:
-    ----------
-    - `state`: the current game state. See FAQ and class
-               `pacman.GameState`.
-    Return:
-    -------
-    - A hashable key object that uniquely identifies a Pacman game state.
-    """
-    return state.getPacmanPosition()
-
-
 class PacmanAgent(Agent):
     """
     A Pacman agent based on Depth-First-Search.
@@ -29,7 +15,22 @@ class PacmanAgent(Agent):
         """
         super().__init__()
         self.args = args
+        self.init_food_list = []
         self.moves = []
+
+    def key(self, state):
+        """
+        Returns a key that uniquely identifies a Pacman game state.
+        Arguments:
+        ----------
+        - `state`: the current game state. See FAQ and class
+                   `pacman.GameState`.
+        Return:
+        -------
+        - A hashable key object that uniquely identifies a Pacman game state.
+        """
+        return tuple(state.getPacmanPosition()) + tuple(
+            state.getGhostPosition(1))
 
     def get_action(self, state):
         """
@@ -64,44 +65,57 @@ class PacmanAgent(Agent):
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
+        self.init_food_list = state.getFood().asList()
+        self.closed = set()
+        final_score, final_path = self.minimax_rec(state, 0, 0)
 
-        final_score, final_path = self.minimax_rec(state, 0)
+        print(final_path)
         return final_path
 
-    def minimax_rec(self, current, player):
+    def minimax_rec(self, current, player, depth):
+        #
+        # print(current.getGhostPosition(1))
+        # print(current.getPacmanPosition())
+        # print("/")
 
         if current.isLose():
-            return -1, []
+            print("loose", depth)
+            return -30, []
 
         if current.isWin():
-            return 1, []
+            print(depth)
+            return 30 - depth, []
 
-        counter = 0
-        chosen_action = 0
-        chosen_next_path = []
+        current_key = self.key(current)
 
-        if player == 1:
-            min_score = 100000
-            successors = current.generateGhostSuccessors(1)
-            for next_state, action in successors:
-                next_score, next_path = self.minimax_rec(next_state,
-                                                         not player)
-                if min_score > next_score:
-                    min_score = next_score
-                    chosen_action = action
-                    chosen_next_path = next_path
-                counter += 1
-            return min_score, [chosen_action] + chosen_next_path
+        if current_key in self.closed:
+            return 0, []
+        else:
+            self.closed.add(current_key)
+            chosen_action = 0
+            chosen_next_path = []
 
-        if player == 0:
-            max_score = 0
-            successors = current.generatePacmanSuccessors()
-            for next_state, action in successors:
-                next_score, next_path = self.minimax_rec(next_state,
-                                                         not player)
-                if max_score < next_score:
-                    max_score = next_score
-                    chosen_action = action
-                    chosen_next_path = next_path
-                counter += 1
-            return max_score, [chosen_action] + chosen_next_path
+            if player == 1:
+                min_score = 100000
+                successors = current.generateGhostSuccessors(1)
+                for next_state, action in successors:
+                    next_score, next_path = self.minimax_rec(
+                        next_state, not player, depth)
+                    if min_score > next_score:
+                        min_score = next_score
+                        chosen_next_path = next_path
+                # print("min ", min_score, depth )
+                return min_score, chosen_next_path
+
+            if player == 0:
+                max_score = 0
+                successors = current.generatePacmanSuccessors()
+                for next_state, action in successors:
+                    next_score, next_path = self.minimax_rec(
+                        next_state, not player, depth + 1)
+                    if max_score < next_score:
+                        max_score = next_score
+                        chosen_action = action
+                        chosen_next_path = next_path
+                # print("max ", max_score, depth)
+                return max_score, [chosen_action] + chosen_next_path
