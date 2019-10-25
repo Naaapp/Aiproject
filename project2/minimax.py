@@ -18,7 +18,7 @@ class PacmanAgent(Agent):
         self.init_food_list = []
         self.moves = []
 
-    def key(self, state):
+    def key(self, state, player):
         """
         Returns a key that uniquely identifies a Pacman game state.
         Arguments:
@@ -30,9 +30,7 @@ class PacmanAgent(Agent):
         - A hashable key object that uniquely identifies a Pacman game state.
         """
         return tuple(state.getPacmanPosition()) + tuple(
-            state.getGhostPosition(1)) + tuple(
-            [(1 if state.hasFood(
-                food[0], food[1]) else 0) for food in self.init_food_list])
+            state.getGhostPosition(1))
 
     def get_action(self, state):
         """
@@ -68,32 +66,26 @@ class PacmanAgent(Agent):
         - A list of legal moves as defined in `game.Directions`.
         """
         self.init_food_list = state.getFood().asList()
-        self.closed = set()
-        final_score, final_path = self.minimax_rec(state, 0, 0)
+        closed = set()
+        final_score, final_path = self.minimax_rec(state, 0, 0, closed)
 
         print(final_path)
         return final_path
 
-    def minimax_rec(self, current, player, depth):
-        #
-        # print(current.getGhostPosition(1))
-        # print(current.getPacmanPosition())
-        # print("/")
+    def minimax_rec(self, current, player, depth, closed):
 
         if current.isLose():
-            # print("loose", depth)
             return current.getScore(), []
 
         if current.isWin():
-            # print(depth)
             return current.getScore(), []
 
-        current_key = self.key(current)
+        current_key = self.key(current, depth)
 
-        if current_key in self.closed:
+        if current_key in closed:
             return 0, []
         else:
-            self.closed.add(current_key)
+            closed.add(current_key)
             chosen_action = 0
             chosen_next_path = []
 
@@ -101,25 +93,21 @@ class PacmanAgent(Agent):
                 min_score = 100000
                 successors = current.generateGhostSuccessors(1)
                 for next_state, action in successors:
-                    print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth)
+                        next_state, not player, depth, closed.copy())
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
-                # print("min ", min_score, depth )
                 return min_score, chosen_next_path
 
             if player == 0:
                 max_score = 0
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
-                    print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth + 1)
+                        next_state, not player, depth + 1, closed.copy())
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action
                         chosen_next_path = next_path
-                # print("max ", max_score, depth)
                 return max_score, [chosen_action] + chosen_next_path
