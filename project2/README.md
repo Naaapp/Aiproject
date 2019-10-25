@@ -5,3 +5,5 @@
 </p>
 
 # Overleaf:[here](https://www.overleaf.com/3143821186jpvymfznbfvg)
+
+# Statement:[here](https://github.com/glouppe/info8006-introduction-to-ai/blob/master/projects/project2/README.md)
