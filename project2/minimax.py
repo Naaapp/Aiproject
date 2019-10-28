@@ -18,7 +18,7 @@ class PacmanAgent(Agent):
         self.init_food_list = []
         self.moves = []
 
-    def key(self, state, player):
+    def key(self, state):
         """
         Returns a key that uniquely identifies a Pacman game state.
         Arguments:
@@ -80,7 +80,7 @@ class PacmanAgent(Agent):
         if current.isWin():
             return current.getScore(), []
 
-        current_key = self.key(current, depth)
+        current_key = self.key(current)
 
         if current_key in closed:
             return 0, []
