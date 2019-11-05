@@ -121,9 +121,9 @@ class PacmanAgent(Agent):
 
 
             if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 2:
-                PacmanAgent.smart_depth-=1
+                PacmanAgent.smart_depth = 1
             if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 3:
-                PacmanAgent.smart_depth-=1
+                PacmanAgent.smart_depth = 2
             if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 4:
                 PacmanAgent.smart_depth = 3
             if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 5:
