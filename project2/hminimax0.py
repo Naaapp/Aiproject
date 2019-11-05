@@ -9,6 +9,11 @@ class PacmanAgent(Agent):
     """
     A Pacman agent based on Depth-First-Search.
     """
+    ls_score = []
+    smart_depth = 1
+    final_score = 0
+    bool = False
+    cpt = 1
 
     def __init__(self, args):
         """
@@ -71,19 +76,66 @@ class PacmanAgent(Agent):
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
+
         self.init_food_list = state.getFood().asList()
         closed = set()
+
+
         if self.key(state) not in self.state_list:
             self.state_list.add(self.key(state))
-            final_score, final_path = self.minimax_rec(
-                state, 0, 0, closed, state.getGhostDirection(1))
+            PacmanAgent.final_score, final_path = self.minimax_rec(state, 0, 0, closed, state.getGhostDirection(1),PacmanAgent.smart_depth)
+            PacmanAgent.ls_score.append(PacmanAgent.final_score)
         else:
             paths = state.getLegalActions(0)
             final_path = [random.choice(paths)]
 
+        if PacmanAgent.bool == True:
+            PacmanAgent.cpt+=1
+            print("old final score: ", PacmanAgent.ls_score[-2])
+
+
+            if PacmanAgent.ls_score[-2] == PacmanAgent.final_score and PacmanAgent.smart_depth == 1:
+                PacmanAgent.smart_depth+= 1
+            if PacmanAgent.ls_score[-2] == PacmanAgent.final_score and PacmanAgent.smart_depth == 2:
+                PacmanAgent.smart_depth+= 1
+            if PacmanAgent.ls_score[-2] == PacmanAgent.final_score and PacmanAgent.smart_depth == 3:
+                PacmanAgent.smart_depth+= 1
+            if PacmanAgent.ls_score[-2] == PacmanAgent.final_score and PacmanAgent.smart_depth == 4:
+                PacmanAgent.smart_depth+= 1
+            if PacmanAgent.cpt > 10 and PacmanAgent.ls_score[-2] == PacmanAgent.final_score and PacmanAgent.smart_depth == 5:
+                PacmanAgent.smart_depth+= 1
+
+
+
+            if PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 1:
+                PacmanAgent.smart_depth+= 4
+            if PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 2:
+                PacmanAgent.smart_depth+= 3
+            if PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 3:
+                PacmanAgent.smart_depth+= 2
+            if PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 4:
+                PacmanAgent.smart_depth+= 1
+            if PacmanAgent.cpt > 10 and PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 5:
+                PacmanAgent.smart_depth+= 1
+
+
+            if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 2:
+                PacmanAgent.smart_depth-=1
+            if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 3:
+                PacmanAgent.smart_depth-=1
+            if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 4:
+                PacmanAgent.smart_depth-=1
+            if PacmanAgent.ls_score[-2] < PacmanAgent.final_score and PacmanAgent.smart_depth == 5:
+                PacmanAgent.smart_depth-=1
+            if PacmanAgent.ls_score[-2] > PacmanAgent.final_score and PacmanAgent.smart_depth == 6:
+                PacmanAgent.smart_depth-=2
+
+
+        PacmanAgent.bool =True
+        print(final_path)
         return final_path
 
-    def minimax_rec(self, current, player, depth, closed, last_action):
+    def minimax_rec(self, current, player, depth, closed, last_action, smart_depth):
 
         if current.isLose():
             return current.getScore(), []
@@ -92,7 +144,7 @@ class PacmanAgent(Agent):
             return current.getScore(), []
 
         # min distance to food + distance to ghost + num of food
-        if depth >= 4:
+        if depth >= smart_depth:
             food_list = current.getFood().asList()
             current_position = current.getPacmanPosition()
             current_ghost_position = current.getGhostPosition(1)
@@ -136,7 +188,7 @@ class PacmanAgent(Agent):
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth,
-                        closed.copy(), last_action)
+                        closed.copy(), last_action,PacmanAgent.smart_depth)
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
@@ -149,7 +201,7 @@ class PacmanAgent(Agent):
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1,
-                        closed.copy(), action)
+                        closed.copy(), last_action,PacmanAgent.smart_depth)
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action
