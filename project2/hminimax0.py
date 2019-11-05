@@ -10,7 +10,7 @@ class PacmanAgent(Agent):
     A Pacman agent based on Depth-First-Search.
     """
     ls_score = []
-    smart_depth = 1
+    smart_depth = 4
     final_score = 0
     bool = False
     cpt = 1
@@ -89,26 +89,29 @@ class PacmanAgent(Agent):
             paths = state.getLegalActions(0)
             final_path = [random.choice(paths)]
 
-        if self.bool:
-            self.cpt += 1
-            print("old final score: ", self.ls_score[-2])
-
-            if self.ls_score[-2] == self.final_score:
-                if self.smart_depth < 3:
-                    self.smart_depth = 4
-                elif self.smart_depth < 5:
-                    self.smart_depth = 5
-
-            elif self.ls_score[-2] > self.final_score:
-                self.smart_depth = 6 - self.smart_depth
-
-            else:
-                if self.smart_depth < 5:
-                    self.smart_depth -= 1
-                elif self.smart_depth < 7:
-                    self.smart_depth -= 2
-
-        self.bool = True
+        # if self.bool:
+        #     self.cpt += 1
+        #     print("old final score: ", self.ls_score[-2], self.smart_depth)
+        #
+        #     if self.ls_score[-2] == self.final_score:
+        #         # if self.smart_depth < 3:
+        #         #     self.smart_depth = 4
+        #         # elif self.smart_depth < 5:
+        #         #     self.smart_depth = 5
+        #         self.smart_depth += 1
+        #
+        #     elif self.ls_score[-2] > self.final_score:
+        #         # self.smart_depth = 6 - self.smart_depth
+        #         self.smart_depth = 6 - self.smart_depth
+        #
+        #     else:
+        #         # if self.smart_depth < 5:
+        #         #     self.smart_depth -= 1
+        #         # elif self.smart_depth < 7:
+        #         #     self.smart_depth -= 2
+        #         self.smart_depth -= 1
+        #
+        # self.bool = True
         print(final_path)
         return final_path
 
@@ -120,6 +123,7 @@ class PacmanAgent(Agent):
         if current.isWin():
             return current.getScore(), []
 
+        # print('depth', depth)
         # min distance to food + distance to ghost + num of food
         if depth >= self.smart_depth:
             food_list = current.getFood().asList()
@@ -141,10 +145,7 @@ class PacmanAgent(Agent):
             # print("current_position :", current.getNumFood())
             # print(check_direction)
 
-            result = 1 / dist_pacman_food + \
-                     1 / (dist_ghost_food + 1) + \
-                     1 / current.getNumFood() + \
-                     dist_pacman_ghost
+            result = 1 / dist_pacman_food + dist_ghost_food + 1 / current.getNumFood()
 
             # print("result :",result)
             return result, []
@@ -172,7 +173,7 @@ class PacmanAgent(Agent):
                 return min_score, chosen_next_path
 
             if player == 0:
-                max_score = 0
+                max_score = -math.inf
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
                     # print(self.key(next_state), action, depth + 1)
