@@ -82,8 +82,9 @@ class PacmanAgent(Agent):
 
         if self.key(state) not in self.state_list:
             self.state_list.add(self.key(state))
-            self.final_score, final_path = self.minimax_rec(state, 0, 0,
-                                                            closed)
+            self.final_score, final_path = self.minimax_rec(
+                                            state, 0, 0, self.smart_depth,
+                                            closed, self.food_score(state))
             self.ls_score.append(self.final_score)
         else:
             paths = state.getLegalActions(0)
@@ -115,7 +116,8 @@ class PacmanAgent(Agent):
         print(final_path)
         return final_path
 
-    def minimax_rec(self, current, player, depth, closed):
+    def minimax_rec(self, current, player, depth, l_depth, closed,
+                    prev_food_score):
 
         if current.isLose():
             return current.getScore(), []
@@ -123,9 +125,12 @@ class PacmanAgent(Agent):
         if current.isWin():
             return current.getScore(), []
 
-        # print('depth', depth)
+        current_food_score = self.food_score(current)
+        if current_food_score < prev_food_score:
+            l_depth += 1
+        print('ldepth', l_depth)
         # min distance to food + distance to ghost + num of food
-        if depth >= self.smart_depth:
+        if depth >= l_depth:
             food_list = current.getFood().asList()
             current_position = current.getPacmanPosition()
             current_ghost_position = current.getGhostPosition(1)
@@ -165,8 +170,8 @@ class PacmanAgent(Agent):
                 for next_state, action in successors:
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth,
-                        closed.copy())
+                        next_state, not player, depth, l_depth,
+                        closed.copy(), prev_food_score)
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
@@ -178,10 +183,19 @@ class PacmanAgent(Agent):
                 for next_state, action in successors:
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth + 1,
-                        closed.copy())
+                        next_state, not player, depth + 1, l_depth,
+                        closed.copy(), current_food_score)
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action
                         chosen_next_path = next_path
                 return max_score, [chosen_action] + chosen_next_path
+
+    def food_score(self, state):
+        # food_list = state.getFood().asList()
+        # current_position = state.getPacmanPosition()
+        # dist_pacman_food = 0
+        # for food_position in food_list:
+        #     dist_pacman_food += manhattanDistance(current_position,
+        #                                           food_position) ^ 2
+        return state.getNumFood()
