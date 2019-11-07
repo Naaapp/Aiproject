@@ -26,6 +26,7 @@ class PacmanAgent(Agent):
         self.init_food_list = []
         self.moves = []
         self.state_list = set()
+        self.init_number_food = 0
 
     def key(self, state):
         """
@@ -78,13 +79,15 @@ class PacmanAgent(Agent):
         """
 
         self.init_food_list = state.getFood().asList()
+        self.init_number_food = state.getNumFood()
         closed = set()
 
         if self.key(state) not in self.state_list:
             self.state_list.add(self.key(state))
             self.final_score, final_path = self.minimax_rec(
-                                            state, 0, 0, self.smart_depth,
-                                            closed, self.food_score(state))
+                state, 0, 0, self.smart_depth,
+                closed, self.food_score(state),
+                'None', 'None')
             self.ls_score.append(self.final_score)
         else:
             print('random path')
@@ -118,7 +121,7 @@ class PacmanAgent(Agent):
         return final_path
 
     def minimax_rec(self, current, player, depth, l_depth, closed,
-                    prev_food_score):
+                    prev_food_score, current_action, prev_action):
 
         if current.isLose():
             return current.getScore(), []
@@ -154,9 +157,12 @@ class PacmanAgent(Agent):
             # print("current_position :", current.getNumFood())
             # print(check_direction)
 
-            result = dist_pacman_ghost - dist_pacman_food
+            result = dist_pacman_ghost \
+                     - dist_pacman_food * dist_pacman_food \
+                     + (self.init_number_food - current.getNumFood()) * 10 \
+                     # - self.is_opposite_actions(current_action, prev_action) * 10
 
-            # print("result :",result)
+            # print("result :", result)
             return result, []
 
         current_key = self.key(current)
@@ -175,7 +181,7 @@ class PacmanAgent(Agent):
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1, l_depth,
-                        closed.copy(), prev_food_score)
+                        closed.copy(), prev_food_score, action, current_action)
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
@@ -188,7 +194,8 @@ class PacmanAgent(Agent):
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1, l_depth,
-                        closed.copy(), current_food_score)
+                        closed.copy(), current_food_score, action,
+                        current_action)
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action
@@ -203,3 +210,14 @@ class PacmanAgent(Agent):
         #     dist_pacman_food += manhattanDistance(current_position,
         #                                           food_position) ^ 2
         return state.getNumFood()
+
+    def is_opposite_actions(self, action1, action2):
+        actions = [action1, action2]
+        if 'None' in actions:
+            return 0
+        elif 'North' in actions and 'South' in actions:
+            return 1
+        elif 'East' in actions and 'West' in actions:
+            return 1
+        else:
+            return 0
