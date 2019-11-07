@@ -10,7 +10,7 @@ class PacmanAgent(Agent):
     A Pacman agent based on Depth-First-Search.
     """
     ls_score = []
-    smart_depth = 4
+    smart_depth = 10
     final_score = 0
     bool = False
     cpt = 1
@@ -87,6 +87,7 @@ class PacmanAgent(Agent):
                                             closed, self.food_score(state))
             self.ls_score.append(self.final_score)
         else:
+            print('random path')
             paths = state.getLegalActions(0)
             final_path = [random.choice(paths)]
 
@@ -126,22 +127,25 @@ class PacmanAgent(Agent):
             return current.getScore(), []
 
         current_food_score = self.food_score(current)
-        if current_food_score < prev_food_score:
-            l_depth += 1
-        print('ldepth', l_depth)
+        # if current_food_score < prev_food_score:
+        #     l_depth += 1
+        # print('ldepth', l_depth)
         # min distance to food + distance to ghost + num of food
         if depth >= l_depth:
             food_list = current.getFood().asList()
             current_position = current.getPacmanPosition()
             current_ghost_position = current.getGhostPosition(1)
+
             dist_pacman_food = math.inf
             for food_position in food_list:
                 dist_pacman_food = min(dist_pacman_food, (
                     manhattanDistance(current_position, food_position)))
+
             dist_ghost_food = math.inf
             for food_position in food_list:
                 dist_ghost_food = min(dist_ghost_food, (
                     manhattanDistance(current_ghost_position, food_position)))
+
             dist_pacman_ghost = manhattanDistance(current_position,
                                                   current_ghost_position)
             # check_direction = last_action != current.getGhostDirection(1)
@@ -150,7 +154,7 @@ class PacmanAgent(Agent):
             # print("current_position :", current.getNumFood())
             # print(check_direction)
 
-            result = 1 / dist_pacman_food + dist_ghost_food + 1 / current.getNumFood()
+            result = dist_pacman_ghost - dist_pacman_food
 
             # print("result :",result)
             return result, []
@@ -170,7 +174,7 @@ class PacmanAgent(Agent):
                 for next_state, action in successors:
                     # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth, l_depth,
+                        next_state, not player, depth + 1, l_depth,
                         closed.copy(), prev_food_score)
                     if min_score > next_score:
                         min_score = next_score
