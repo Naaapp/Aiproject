@@ -10,7 +10,7 @@ class PacmanAgent(Agent):
     A Pacman agent based on Depth-First-Search.
     """
     ls_score = []
-    smart_depth = 10
+    smart_depth = 4
     final_score = 0
     bool = False
     cpt = 1
@@ -117,7 +117,7 @@ class PacmanAgent(Agent):
         #         self.smart_depth -= 1
         #
         # self.bool = True
-        print(final_path)
+        print(final_path, self.final_score)
         return final_path
 
     def minimax_rec(self, current, player, depth, l_depth, closed,
@@ -127,6 +127,7 @@ class PacmanAgent(Agent):
             return current.getScore(), []
 
         if current.isWin():
+            print('win', current.getScore(), 'key', self.key(current))
             return current.getScore(), []
 
         current_food_score = self.food_score(current)
@@ -152,17 +153,20 @@ class PacmanAgent(Agent):
             dist_pacman_ghost = manhattanDistance(current_position,
                                                   current_ghost_position)
             # check_direction = last_action != current.getGhostDirection(1)
-            # print("dist_ghost: ", dist_ghost)
-            # print("dist_food :", dist)
-            # print("current_position :", current.getNumFood())
-            # print(check_direction)
 
-            result = dist_pacman_ghost \
-                     - dist_pacman_food * dist_pacman_food \
-                     + (self.init_number_food - current.getNumFood()) * 10 \
-                     # - self.is_opposite_actions(current_action, prev_action) * 10
+            # result = dist_pacman_ghost \
+            #          - dist_pacman_food * dist_pacman_food \
+            #          + (self.init_number_food - current.getNumFood()) * 10 \
+            #          # - self.is_opposite_actions(current_action, prev_action) * 10
 
-            # print("result :", result)
+            if dist_pacman_food < dist_ghost_food:
+                result = 10 - dist_pacman_food
+            elif dist_pacman_food > dist_ghost_food:
+                result = 1
+            else:
+                result = 5 - dist_pacman_food + dist_pacman_ghost
+
+            # print("result :", result, 'key', self.key(current))
             return result, []
 
         current_key = self.key(current)
