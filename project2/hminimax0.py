@@ -157,7 +157,7 @@ class PacmanAgent(Agent):
             # result = dist_pacman_ghost \
             #          - dist_pacman_food * dist_pacman_food \
             #          + (self.init_number_food - current.getNumFood()) * 10 \
-            #          # - self.is_opposite_actions(current_action, prev_action) * 10
+            #          - self.is_opposite_actions(current_action, prev_action) * 10
 
             if dist_pacman_food < dist_ghost_food:
                 result = 10 - dist_pacman_food
@@ -165,6 +165,8 @@ class PacmanAgent(Agent):
                 result = 1
             else:
                 result = 5 - dist_pacman_food + dist_pacman_ghost
+            result += (self.init_number_food - current.getNumFood()) * 10
+            result += dist_pacman_ghost
 
             # print("result :", result, 'key', self.key(current))
             return result, []
