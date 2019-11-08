@@ -1,0 +1,5 @@
+Version 'perfect greedy small medium large' :
+-works on small (greedy), medium (greedy, smarty, rightrandy), large (greedy, smarty)
+-doesn't work on small (dumby, smarty, rightrandy), medium (dumby), large (dumby, rightrandy,
+problem with dumby and rightrandy in medium large le pacman est coincé dans une zone
+problem with small quand pas greedy

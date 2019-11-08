@@ -1,5 +1,7 @@
 from pacman_module.game import Agent
 from pacman_module.pacman import Directions
+from pacman_module.util import manhattanDistance
+import math
 
 
 class PacmanAgent(Agent):
@@ -65,8 +67,26 @@ class PacmanAgent(Agent):
         -------
         - A list of legal moves as defined in `game.Directions`.
         """
+
         self.init_food_list = state.getFood().asList()
         closed = set()
+
+        # first step necessary to have different path depending
+        # on the type of ghost. We go to the position the most distant of the
+        # ghost . The reaction of the ghost will be different
+        # depending of it type (smarty and dumby / greedy)
+        if state.getGhostDirection(1) == 'Stop':
+            successors = state.generatePacmanSuccessors()
+            max_dist = -math.inf
+            chosen_action = 'Stop'
+            for next_state, action in successors:
+                dist = manhattanDistance(
+                    state.getGhostPosition(1), state.getPacmanPosition())
+                if max_dist < dist:
+                    max_dist = dist
+                    chosen_action = action
+            return [chosen_action]
+
         final_score, final_path = self.minimax_rec(state, 0, 0, closed)
 
         print(final_path)
@@ -75,39 +95,48 @@ class PacmanAgent(Agent):
     def minimax_rec(self, current, player, depth, closed):
 
         if current.isLose():
+            # print('loose', current.getScore(), 'key', self.key(current))
             return current.getScore(), []
 
         if current.isWin():
+            # print('win', current.getScore(), 'key', self.key(current))
             return current.getScore(), []
 
         current_key = self.key(current)
 
         if current_key in closed:
-            return 0, []
+            return -math.inf, []
         else:
             closed.add(current_key)
             chosen_action = 0
             chosen_next_path = []
 
             if player == 1:
-                min_score = 100000
+                min_score = math.inf
                 successors = current.generateGhostSuccessors(1)
+                # print(depth, successors)
                 for next_state, action in successors:
+                    # print('ghost', next_state.getGhostDirection(1))
+                    # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth, closed.copy())
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
+                # print('return score ghost', min_score)
                 return min_score, chosen_next_path
 
             if player == 0:
-                max_score = 0
+                max_score = -math.inf
+                chosen_action = 'Stop'
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
+                    # print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1, closed.copy())
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action
                         chosen_next_path = next_path
+                # print('return score pacman', max_score)
                 return max_score, [chosen_action] + chosen_next_path
