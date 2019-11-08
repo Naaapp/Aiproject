@@ -172,7 +172,7 @@ class PacmanAgent(Agent):
         current_key = self.key(current)
 
         if current_key in closed:
-            return 0, []
+            return -math.inf, []
         else:
             closed.add(current_key)
             chosen_action = 0
@@ -206,7 +206,7 @@ class PacmanAgent(Agent):
                         max_score = next_score
                         chosen_action = action
                         chosen_next_path = next_path
-                print('return score pacman', max_score)
+                # print('return score pacman', max_score)
                 return max_score, [chosen_action] + chosen_next_path
 
     def food_score(self, state):
