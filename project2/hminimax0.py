@@ -176,16 +176,17 @@ class PacmanAgent(Agent):
             #          + (self.init_number_food - current.getNumFood()) * 10 \
             #          - self.is_opposite_actions(current_action, prev_action) * 10
 
-            # if dist_pacman_food <= dist_ghost_food:
-            #     result = 4 - dist_pacman_food
-            # elif dist_pacman_food > dist_ghost_food:
-            #     result = 1
-            #
-            # result += (self.init_number_food - current.getNumFood()) * 10
-            # result += dist_pacman_ghost
-            # result += (init_dist_pacman_food - dist_pacman_food) * 5
-            result = - mean_dist_pacman_food - dist_pacman_food + n_same_dist_food
-            result += (self.init_number_food - current.getNumFood()) * 10
+            result = 0
+            if current.getNumFood() == 1:
+                if dist_pacman_food <= dist_ghost_food:
+                    result = 4 - dist_pacman_food
+                elif dist_pacman_food > dist_ghost_food:
+                    result = 1
+                result += dist_pacman_ghost
+                result += (init_dist_pacman_food - dist_pacman_food) * 5
+            else:
+                result = - mean_dist_pacman_food - dist_pacman_food + n_same_dist_food
+                result += (self.init_number_food - current.getNumFood()) * 10
 
             if self.cpt == 3:
                 print("result :", result, 'key', self.key(current), depth)
