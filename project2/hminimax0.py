@@ -124,7 +124,7 @@ class PacmanAgent(Agent):
                     prev_food_score, current_action, prev_action, init_position):
 
         if current.isLose():
-            # print('loose', current.getScore(), 'key', self.key(current))
+            print('loose', current.getScore(), 'key', self.key(current))
             return current.getScore(), []
 
         if current.isWin():
@@ -142,14 +142,25 @@ class PacmanAgent(Agent):
             current_ghost_position = current.getGhostPosition(1)
 
             dist_pacman_food = math.inf
+            n_same_dist_food = 1
             for food_position in food_list:
-                dist_pacman_food = min(dist_pacman_food, (
-                    manhattanDistance(current_position, food_position)))
+                dist = manhattanDistance(current_position, food_position)
+                if dist_pacman_food > dist:
+                    dist_pacman_food = dist
+                    n_same_dist_food = 1
+                elif dist_pacman_food == dist:
+                    n_same_dist_food += 1
 
             init_dist_pacman_food = math.inf
             for food_position in food_list:
                 init_dist_pacman_food = min(init_dist_pacman_food, (
                     manhattanDistance(init_position, food_position)))
+
+            mean_dist_pacman_food = 0
+            for food_position in food_list:
+                mean_dist_pacman_food += (
+                    manhattanDistance(current_position, food_position))
+            mean_dist_pacman_food = mean_dist_pacman_food / len(food_list)
 
             dist_ghost_food = math.inf
             for food_position in food_list:
@@ -165,17 +176,19 @@ class PacmanAgent(Agent):
             #          + (self.init_number_food - current.getNumFood()) * 10 \
             #          - self.is_opposite_actions(current_action, prev_action) * 10
 
-            if dist_pacman_food <= dist_ghost_food:
-                result = 4 - dist_pacman_food
-            elif dist_pacman_food > dist_ghost_food:
-                result = 1
-
+            # if dist_pacman_food <= dist_ghost_food:
+            #     result = 4 - dist_pacman_food
+            # elif dist_pacman_food > dist_ghost_food:
+            #     result = 1
+            #
+            # result += (self.init_number_food - current.getNumFood()) * 10
+            # result += dist_pacman_ghost
+            # result += (init_dist_pacman_food - dist_pacman_food) * 5
+            result = - mean_dist_pacman_food - dist_pacman_food + n_same_dist_food
             result += (self.init_number_food - current.getNumFood()) * 10
-            result += dist_pacman_ghost
-            result += (init_dist_pacman_food - dist_pacman_food) * 5
 
-            if self.cpt == 2:
-                print("result :", result, 'key', self.key(current))
+            if self.cpt == 3:
+                print("result :", result, 'key', self.key(current), depth)
             return result, []
 
         current_key = self.key(current)
@@ -192,15 +205,15 @@ class PacmanAgent(Agent):
                 successors = current.generateGhostSuccessors(1)
                 for next_state, action in successors:
                     # print('ghost', next_state.getGhostDirection(1))
-                    if self.cpt == 2:
-                        print(self.key(next_state), action, depth + 1)
+                    # if self.cpt == 2:
+                    #     print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1, l_depth,
                         closed.copy(), prev_food_score, action, current_action, init_position)
                     if min_score > next_score:
                         min_score = next_score
                         chosen_next_path = next_path
-                if self.cpt == 2:
+                if self.cpt == 3:
                     print('return score ghost', min_score)
                 return min_score, chosen_next_path
 
@@ -208,8 +221,8 @@ class PacmanAgent(Agent):
                 max_score = -math.inf
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
-                    if self.cpt == 2:
-                        print(self.key(next_state), action, depth + 1)
+                    # if self.cpt == 2:
+                    #     print(self.key(next_state), action, depth + 1)
                     next_score, next_path = self.minimax_rec(
                         next_state, not player, depth + 1, l_depth,
                         closed.copy(), current_food_score, action,
@@ -218,7 +231,7 @@ class PacmanAgent(Agent):
                         max_score = next_score
                         chosen_action = action
                         chosen_next_path = next_path
-                if self.cpt == 2:
+                if self.cpt == 3:
                     print('return score pacman', max_score)
                 return max_score, [chosen_action] + chosen_next_path
 
