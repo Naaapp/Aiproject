@@ -90,7 +90,6 @@ class PacmanAgent(Agent):
 
         final_score, final_path = self.minimax_rec(state, 0, 0, closed)
 
-        print(final_path)
         return final_path
 
     def minimax_rec(self, current, player, depth, closed):
@@ -108,51 +107,50 @@ class PacmanAgent(Agent):
         - 'result'  :   resulting score
         - 'path'    :   resulting path
         """
-
-        if current.isLose():
-            # print('loose', current.getScore(), 'key', self.key(current))
-            return current.getScore(), []
-
-        if current.isWin():
-            # print('win', current.getScore(), 'key', self.key(current))
-            return current.getScore(), []
-
-        # Recursive case
         current_key = self.key(current)
         # If already visited, stop the recursion and return
         # the worst score possible
         if current_key in closed:
             return -math.inf, []
-        else:
-            closed.add(current_key)
-            chosen_next_path = []
+        closed.add(current_key)
 
-            # It is the turn of ghost, generate it successors and call
-            # recursively minimax_rec for all of them. Return the best score
-            # with the corresponding worst path
-            if player == 1:
-                min_score = math.inf
-                successors = current.generateGhostSuccessors(1)
-                for next_state, action in successors:
-                    next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth, closed.copy())
-                    if min_score > next_score:
-                        min_score = next_score
-                        chosen_next_path = next_path
-                return min_score, chosen_next_path
+        # Loose case
+        if current.isLose():
+            return current.getScore(), []
 
-            # It is the turn of pacman, generate it successors and call
-            # recursively minimax_rec for all of them. Return the best score
-            # with the corresponding best path
-            if player == 0:
-                max_score = -math.inf
-                chosen_action = 'Stop'
-                successors = current.generatePacmanSuccessors()
-                for next_state, action in successors:
-                    next_score, next_path = self.minimax_rec(
-                        next_state, not player, depth + 1, closed.copy())
-                    if max_score < next_score:
-                        max_score = next_score
-                        chosen_action = action
-                        chosen_next_path = next_path
-                return max_score, [chosen_action] + chosen_next_path
+        # Win case
+        if current.isWin():
+            return current.getScore(), []
+
+        # Recursive case
+        chosen_next_path = []
+
+        # It is the turn of ghost, generate it successors and call
+        # recursively minimax_rec for all of them. Return the best score
+        # with the corresponding worst path
+        if player == 1:
+            min_score = math.inf
+            successors = current.generateGhostSuccessors(1)
+            for next_state, action in successors:
+                next_score, next_path = self.minimax_rec(
+                    next_state, not player, depth, closed.copy())
+                if min_score > next_score:
+                    min_score = next_score
+                    chosen_next_path = next_path
+            return min_score, chosen_next_path
+
+        # It is the turn of pacman, generate it successors and call
+        # recursively minimax_rec for all of them. Return the best score
+        # with the corresponding best path
+        if player == 0:
+            max_score = -math.inf
+            chosen_action = 'Stop'
+            successors = current.generatePacmanSuccessors()
+            for next_state, action in successors:
+                next_score, next_path = self.minimax_rec(
+                    next_state, not player, depth + 1, closed.copy())
+                if max_score < next_score:
+                    max_score = next_score
+                    chosen_action = action
+                    chosen_next_path = next_path
+            return max_score, [chosen_action] + chosen_next_path

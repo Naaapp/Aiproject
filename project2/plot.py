@@ -2,18 +2,37 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-dumby = [544, 542, 500]
-greedy = [560, 560, 500]
-smarty = [560, 560, 500]
+"""
+dumby
+544, 544, 542
+0.0685, 0.1969, 0.10
+183, 525, 277
+
+greedy
+560, 560, 560
+0,052,  0,1483, 0,0459
+117, 362, 117
+
+smarty
+560, 560, 560
+0.1436, 0,2291, 0,1366
+117, 362, 117
+"""
+
+
+
+dumby = [183, 525, 249]
+greedy = [117, 362, 117]
+smarty = [117, 362, 117]
 
 index = ['hminimax0', 'himinimax1', 'hminimax2']
 df = pd.DataFrame({'dumby': dumby, 'greedy': greedy,
                    'smarty': smarty}, index=index)
 
 ax = df.plot.bar(rot=0)
-plt.ylabel('Score')
+# plt.ylabel('Score')
 # plt.ylabel('Computation time')
-# plt.ylabel('Number of expanded nodes')
+plt.ylabel('Number of expanded nodes')
 
 
 def add_value_labels(ax, spacing=5):
