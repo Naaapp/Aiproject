@@ -53,17 +53,18 @@ class PacmanAgent(Agent):
         """
 
         if not self.moves:
-            self.moves = self.minimax(state)
+            self.moves = self.hminimax(state)
         try:
             return self.moves.pop(0)
 
         except IndexError:
             return Directions.STOP
 
-    def minimax(self, state):
+    def hminimax(self, state):
         """
         Given a pacman game state,
-        returns a list of legal moves to solve the search layout.
+        returns a list of legal moves to solve the search layout
+        using the hminimax algorithm.
         Arguments:
         ----------
         - `state`: the current game state. See FAQ and class
@@ -83,7 +84,7 @@ class PacmanAgent(Agent):
         # position. This situation does not occur with these layouts.
         if self.key(state) not in self.state_list:
             self.state_list.add(self.key(state))
-            final_score, final_path = self.minimax_rec(
+            final_score, final_path = self.hminimax_rec(
                 state, 0, 0, self.chosen_depth,
                 closed, state.getPacmanPosition())
         else:
@@ -92,8 +93,8 @@ class PacmanAgent(Agent):
 
         return final_path
 
-    def minimax_rec(self, current, player, depth, l_depth, closed,
-                    init_position):
+    def hminimax_rec(self, current, player, depth, l_depth, closed,
+                     init_position):
         """
         Recursive function which implements the hminimax algorithm
         Arguments:
@@ -178,17 +179,16 @@ class PacmanAgent(Agent):
             return -math.inf, []
         else:
             closed.add(current_key)
-            chosen_action = 0
             chosen_next_path = []
 
             # It is the turn of ghost, generate it successors and call
-            # recursively minimax_rec for all of them. Return the best score
+            # recursively hminimax_rec for all of them. Return the best score
             # with the corresponding worst path
             if player == 1:
                 min_score = math.inf
                 successors = current.generateGhostSuccessors(1)
                 for next_state, action in successors:
-                    next_score, next_path = self.minimax_rec(
+                    next_score, next_path = self.hminimax_rec(
                         next_state, not player, depth + 1, l_depth,
                         closed.copy(), init_position)
                     if min_score > next_score:
@@ -197,15 +197,16 @@ class PacmanAgent(Agent):
                 return min_score, chosen_next_path
 
             # It is the turn of pacman, generate it successors and call
-            # recursively minimax_rec for all of them. Return the best score
+            # recursively hminimax_rec for all of them. Return the best score
             # with the corresponding best path
             if player == 0:
                 max_score = -math.inf
+                chosen_action = 'Stop'
                 successors = current.generatePacmanSuccessors()
                 for next_state, action in successors:
-                    next_score, next_path = self.minimax_rec(
+                    next_score, next_path = self.hminimax_rec(
                         next_state, not player, depth + 1, l_depth,
-                        closed.copy(),  init_position)
+                        closed.copy(), init_position)
                     if max_score < next_score:
                         max_score = next_score
                         chosen_action = action

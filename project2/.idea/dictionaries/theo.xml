@@ -2,6 +2,7 @@
   <dictionary name="theo">
     <words>
       <w>hminimax</w>
+      <w>ldepth</w>
       <w>minimax</w>
       <w>pacman</w>
     </words>
