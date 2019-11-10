@@ -93,6 +93,20 @@ class PacmanAgent(Agent):
         return final_path
 
     def minimax_rec(self, current, player, depth, closed):
+        """
+        Recursive function which implements the minimax algorithm
+        Arguments:
+        ----------
+        - 'current' :       the current game state.
+        - 'player'  :       boolean value, 0 if pacman turn, 1 if ghost turn
+        - 'depth'   :       current depth of the tree
+        - 'closed'  :       set of states already visited in the tree branch
+
+        Return:
+        -------
+        - 'result'  :   resulting score
+        - 'path'    :   resulting path
+        """
 
         if current.isLose():
             # print('loose', current.getScore(), 'key', self.key(current))
