@@ -22,7 +22,7 @@ class PacmanAgent(Agent):
         self.moves = []
         self.state_list = set()
         self.init_number_food = 0
-        self.chosen_depth = 2
+        self.chosen_depth = 4
 
     def key(self, state):
         """
@@ -88,7 +88,6 @@ class PacmanAgent(Agent):
                 state, 0, 0, self.chosen_depth,
                 closed, state.getPacmanPosition())
         else:
-            print("test")
             paths = state.getLegalActions(0)
             final_path = [random.choice(paths)]
 
