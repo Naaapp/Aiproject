@@ -3,6 +3,7 @@
 from pacman_module.game import Agent
 import numpy as np
 from pacman_module import util
+from scipy.stats import norm
 
 
 class BeliefStateAgent(Agent):
@@ -27,6 +28,7 @@ class BeliefStateAgent(Agent):
         self.ghost_type = self.args.ghostagent
         self.sensor_variance = self.args.sensorvariance
         self.counter = 0
+        self.metrics_list = np.zeros((10, 10))
 
     def update_belief_state(self, evidences, pacman_position):
         """
@@ -61,6 +63,8 @@ class BeliefStateAgent(Agent):
 
         beliefStates = np.zeros((len(evidences), width, height))
 
+        # print(sum(sum(self.beliefGhostStates[0])))
+
         # Transition step
         for k in range(len(evidences)):
             for i in range(1, width - 1):
@@ -82,6 +86,23 @@ class BeliefStateAgent(Agent):
                         self.compute_belief_states(beliefStates, k, i, j, i_p,
                                                    j_p, current_prob,
                                                    corrector)
+            if self.counter is 0:
+                beliefStates[k] = beliefStates[k] * 1 / sum(
+                    sum(beliefStates[k]))
+
+        # Update step
+        for k in range(len(evidences)):
+            for i in range(1, width - 1):
+                for j in range(1, height - 1):
+                    if self.walls[i][j] is False:
+                        current_dist = util.manhattanDistance(pacman_position,
+                                                              (i, j))
+                        dist_diff = current_dist - evidences[k]
+                        prob = 1 - abs(dist_diff) / (width + height)
+
+                        beliefStates[k][i][j] = beliefStates[k][i][j] * prob
+
+            beliefStates[k] = beliefStates[k] * 1 / sum(sum(beliefStates[k]))
 
         # XXX: End of your code
 
@@ -167,7 +188,14 @@ class BeliefStateAgent(Agent):
 
         N.B. : [0,0] is the bottom left corner of the maze
         """
-        pass
+        metrics = np.zeros(len(belief_states))
+        true_ghost_position = state.getGhostPosition(1)
+        for k in range(len(belief_states)):
+            belief_state = belief_states[k]
+            metrics[k] = util.manhattanDistance(
+                true_ghost_position, np.unravel_index(belief_state.argmax(),
+                                                      belief_state.shape))
+        print(metrics)
 
     def get_action(self, state):
         """
@@ -198,3 +226,8 @@ class BeliefStateAgent(Agent):
         self._record_metrics(self.beliefGhostStates, state)
 
         return newBeliefStates
+
+
+def gaussian(x, mu, sig):
+    return 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(
+        -np.power((x - mu) / sig, 2.) / 2)
