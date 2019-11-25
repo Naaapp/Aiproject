@@ -65,65 +65,33 @@ class BeliefStateAgent(Agent):
         for k in range(len(evidences)):
             for i in range(1, width - 1):
                 for j in range(1, height - 1):
-                    # If we are not in a wall, we add proba to the adjacent
                     if self.walls[i][j] is False:
                         j_p = pacman_position[1]
                         i_p = pacman_position[0]
                         current_prob = self.beliefGhostStates[k][i][j]
-
                         corrector = 1
                         if self.ghost_type == 'afraid':
                             corrector = 2
                         if self.ghost_type == 'scared':
-                            corrector = 2**3
-                        norm = self.compute_norm(i, j, pacman_position)
-                        if self.counter == 1 and j == 1:
-                            print(norm)
+                            corrector = 2 ** 3
+
+                        norm = self.compute_norm(i, j, i_p, j_p, corrector)
                         if norm > 0:
                             current_prob = current_prob / norm
 
-                        if self.walls[i][j - 1] is False:
-                            current_value = current_prob
-                            if j_p >= j:
-                                current_value = current_value * corrector
-                            beliefStates[k][i][j - 1] += current_value
-                        if self.walls[i][j + 1] is False:
-                            current_value = current_prob
-                            if j_p <= j:
-                                current_value = current_value * corrector
-                            beliefStates[k][i][j + 1] += current_value
-                        if self.walls[i + 1][j] is False:
-                            current_value = current_prob
-                            if i_p <= i:
-                                current_value = current_value * corrector
-                            beliefStates[k][i + 1][j] += current_value
-                        if self.walls[i - 1][j] is False:
-                            current_value = current_prob
-                            if i_p >= i:
-                                current_value = current_value * corrector
-                            beliefStates[k][i - 1][j] += current_value
+                        self.compute_belief_states(beliefStates, k, i, j, i_p,
+                                                   j_p, current_prob,
+                                                   corrector)
 
         # XXX: End of your code
 
         self.beliefGhostStates = beliefStates
-
-        # if self.counter is 1:
-        #     print(self.beliefGhostStates)
-        #     pass
-
         self.counter += 1
 
         return beliefStates
 
-    def compute_norm(self, i, j, pos):
+    def compute_norm(self, i, j, i_p, j_p, value):
         norm = 0
-        j_p = pos[1]
-        i_p = pos[0]
-        value = 1
-        if self.ghost_type == 'afraid':
-            value = 2
-        if self.ghost_type == 'scared':
-            value = 2 ** 3
         if not self.walls[i][j - 1]:
             norm += (value if j_p >= j else 1)
         if not self.walls[i][j + 1]:
@@ -134,6 +102,21 @@ class BeliefStateAgent(Agent):
             norm += (value if i_p >= i else 1)
 
         return norm
+
+    def compute_belief_states(self, beliefStates, k, i, j, i_p, j_p,
+                              current_prob, corrector):
+        if not self.walls[i][j - 1]:
+            beliefStates[k][i][j - 1] += (current_prob * corrector if j_p >= j
+                                          else current_prob)
+        if not self.walls[i][j + 1]:
+            beliefStates[k][i][j + 1] += (current_prob * corrector if j_p <= j
+                                          else current_prob)
+        if not self.walls[i + 1][j]:
+            beliefStates[k][i + 1][j] += (current_prob * corrector if i_p <= i
+                                          else current_prob)
+        if not self.walls[i - 1][j]:
+            beliefStates[k][i - 1][j] += (current_prob * corrector if i_p >= i
+                                          else current_prob)
 
     def _get_evidence(self, state):
         """
