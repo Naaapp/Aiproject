@@ -3,7 +3,6 @@
 from pacman_module.game import Agent
 import numpy as np
 from pacman_module import util
-from scipy.stats import norm
 
 
 class BeliefStateAgent(Agent):
@@ -188,14 +187,14 @@ class BeliefStateAgent(Agent):
 
         N.B. : [0,0] is the bottom left corner of the maze
         """
-        metrics = np.zeros(len(belief_states))
+        metrics = np.zeros((len(belief_states), 20))
         true_ghost_position = state.getGhostPosition(1)
         for k in range(len(belief_states)):
             belief_state = belief_states[k]
-            metrics[k] = util.manhattanDistance(
+            metrics[k, self.counter % 20] = util.manhattanDistance(
                 true_ghost_position, np.unravel_index(belief_state.argmax(),
                                                       belief_state.shape))
-        print(metrics)
+        print(np.mean(metrics[0]))
 
     def get_action(self, state):
         """
@@ -226,8 +225,3 @@ class BeliefStateAgent(Agent):
         self._record_metrics(self.beliefGhostStates, state)
 
         return newBeliefStates
-
-
-def gaussian(x, mu, sig):
-    return 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(
-        -np.power((x - mu) / sig, 2.) / 2)
