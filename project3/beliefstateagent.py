@@ -98,12 +98,16 @@ class BeliefStateAgent(Agent):
                                                               (i, j))
                         dist_diff = current_dist - evidences[k]
                         prob = 1 - abs(dist_diff) / (width + height)
+                        if prob < 0:
+                            prob = 0.0001
 
                         beliefStates[k][i][j] = beliefStates[k][i][j] * prob
 
             beliefStates[k] = beliefStates[k] * 1 / sum(sum(beliefStates[k]))
 
         # XXX: End of your code
+
+        print(beliefStates)
 
         self.beliefGhostStates = beliefStates
         self.counter += 1
