@@ -27,7 +27,7 @@ class BeliefStateAgent(Agent):
         self.ghost_type = self.args.ghostagent
         self.sensor_variance = self.args.sensorvariance
         self.counter = 0
-        self.metrics_list = np.zeros((10, 10))
+        self.metrics = 0
 
     def update_belief_state(self, evidences, pacman_position):
         """
@@ -106,8 +106,6 @@ class BeliefStateAgent(Agent):
             beliefStates[k] = beliefStates[k] * 1 / sum(sum(beliefStates[k]))
 
         # XXX: End of your code
-
-        print(beliefStates)
 
         self.beliefGhostStates = beliefStates
         self.counter += 1
@@ -191,14 +189,16 @@ class BeliefStateAgent(Agent):
 
         N.B. : [0,0] is the bottom left corner of the maze
         """
-        metrics = np.zeros((len(belief_states), 20))
+        if self.metrics is 0:
+            self.metrics = np.zeros((len(belief_states), 10000))
         true_ghost_position = state.getGhostPosition(1)
         for k in range(len(belief_states)):
             belief_state = belief_states[k]
-            metrics[k, self.counter % 20] = util.manhattanDistance(
+            self.metrics[k, self.counter % 10000] = util.manhattanDistance(
                 true_ghost_position, np.unravel_index(belief_state.argmax(),
                                                       belief_state.shape))
-        print(np.mean(metrics[0]))
+        if self.counter > 10000:
+            print(np.mean(self.metrics[0]))
 
     def get_action(self, state):
         """
