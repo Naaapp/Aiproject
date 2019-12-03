@@ -53,38 +53,43 @@ class BeliefStateAgent(Agent):
         N.B. : [0,0] is the bottom left corner of the maze
         """
 
-        width = 21
-        height = 12
-
         beliefStates = self.beliefGhostStates
 
         # XXX: Your code here
 
-        beliefStates = np.zeros((len(evidences), width, height))
+        width = 21
+        height = 12
 
-        # print(sum(sum(self.beliefGhostStates[0])))
+        # Variable in which we will accumulate probabilities
+        beliefStates = np.zeros((len(evidences), width, height))
 
         # Transition step
         for k in range(len(evidences)):
             for i in range(1, width - 1):
                 for j in range(1, height - 1):
+                    # For each no wall position, we add to the neighbour
+                    # the probabilities of being in the position * the
+                    # probability to go to a neighbour,
+                    # for each neighbour
                     if self.walls[i][j] is False:
                         j_p = pacman_position[1]
                         i_p = pacman_position[0]
                         current_prob = self.beliefGhostStates[k][i][j]
-                        corrector = 1
+                        current_prob_norm = 0
+                        c = 1
                         if self.ghost_type == 'afraid':
-                            corrector = 2
+                            c = 2
                         if self.ghost_type == 'scared':
-                            corrector = 2 ** 3
+                            c = 2 ** 3
 
-                        norm = self.compute_norm(i, j, i_p, j_p, corrector)
+                        norm = self.compute_norm(i, j, i_p, j_p, c)
                         if norm > 0:
-                            current_prob = current_prob / norm
+                            current_prob_norm = current_prob / norm
 
                         self.compute_belief_states(beliefStates, k, i, j, i_p,
-                                                   j_p, current_prob,
-                                                   corrector)
+                                                   j_p, current_prob_norm,
+                                                   c)
+            # If first step, the sum of probabilities is not 0, so we normalize
             if self.counter is 0:
                 beliefStates[k] = beliefStates[k] * 1 / sum(
                     sum(beliefStates[k]))
@@ -93,6 +98,10 @@ class BeliefStateAgent(Agent):
         for k in range(len(evidences)):
             for i in range(1, width - 1):
                 for j in range(1, height - 1):
+                    # For each no wall position, we multiply the probability by
+                    # a factor inversely proportional to the diff between
+                    # the current distance to pacman and the noisy distance
+                    # between pacman and ghost
                     if self.walls[i][j] is False:
                         current_dist = util.manhattanDistance(pacman_position,
                                                               (i, j))
@@ -103,6 +112,7 @@ class BeliefStateAgent(Agent):
 
                         beliefStates[k][i][j] = beliefStates[k][i][j] * prob
 
+            # We normalize the probabilities
             beliefStates[k] = beliefStates[k] * 1 / sum(sum(beliefStates[k]))
 
         # XXX: End of your code
@@ -112,33 +122,63 @@ class BeliefStateAgent(Agent):
 
         return beliefStates
 
-    def compute_norm(self, i, j, i_p, j_p, value):
+    def compute_norm(self, i, j, i_p, j_p, c):
+        """
+        For a given current position and pacman position and a c value,
+        Gives the norm (see the definition in report)
+
+        Arguments:
+        ----------
+        - `i' and 'j' : current position
+        - 'i_p' and 'j_p' : pacman position
+        - 'c' : 1 if confused, 2 if afraid, 2 ** 3 if scared
+
+        Return:
+        -------
+        - The norm of c's  (see the definition in report)
+        """
         norm = 0
         if not self.walls[i][j - 1]:
-            norm += (value if j_p >= j else 1)
+            norm += (c if j_p >= j else 1)
         if not self.walls[i][j + 1]:
-            norm += (value if j_p <= j else 1)
+            norm += (c if j_p <= j else 1)
         if not self.walls[i + 1][j]:
-            norm += (value if i_p <= i else 1)
+            norm += (c if i_p <= i else 1)
         if not self.walls[i - 1][j]:
-            norm += (value if i_p >= i else 1)
+            norm += (c if i_p >= i else 1)
 
         return norm
 
     def compute_belief_states(self, beliefStates, k, i, j, i_p, j_p,
-                              current_prob, corrector):
+                              prob, c):
+        """
+        For a given current position, pacman position, a c value and a
+        normalised probablity,
+        Add the computed probability values to belief states of neighbours
+        (after apply this function to all positions, we obtain the
+        transition model defines in the report)
+
+        Arguments:
+        ----------
+        - 'k' : ghost number
+        - `i' and 'j' : current position
+        - 'i_p' and 'j_p' : pacman position
+        - 'prob  definition in report
+        - 'c' : 1 if confused, 2 if afraid, 2 ** 3 if scared
+        """
+
         if not self.walls[i][j - 1]:
-            beliefStates[k][i][j - 1] += (current_prob * corrector if j_p >= j
-                                          else current_prob)
+            beliefStates[k][i][j - 1] += (prob * c if j_p >= j
+                                          else prob)
         if not self.walls[i][j + 1]:
-            beliefStates[k][i][j + 1] += (current_prob * corrector if j_p <= j
-                                          else current_prob)
+            beliefStates[k][i][j + 1] += (prob * c if j_p <= j
+                                          else prob)
         if not self.walls[i + 1][j]:
-            beliefStates[k][i + 1][j] += (current_prob * corrector if i_p <= i
-                                          else current_prob)
+            beliefStates[k][i + 1][j] += (prob * c if i_p <= i
+                                          else prob)
         if not self.walls[i - 1][j]:
-            beliefStates[k][i - 1][j] += (current_prob * corrector if i_p >= i
-                                          else current_prob)
+            beliefStates[k][i - 1][j] += (prob * c if i_p >= i
+                                          else prob)
 
     def _get_evidence(self, state):
         """
